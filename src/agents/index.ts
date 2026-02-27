@@ -10,3 +10,4 @@ export { TesterAgent } from './tester';
 export { SecurityAgent } from './security';
 export { DocumenterAgent } from './documenter';
 export { AssetsAgent } from './assets';
+export { ProductManagerAgent } from './product-manager';

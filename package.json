@@ -7,7 +7,9 @@
     "build": "tsc",
     "start": "npm run build && node dist/main.js",
     "dev": "ts-node src/main.ts",
-    "check": "node dist/main.js --check"
+    "check": "node dist/main.js --check",
+    "auto": "npm run build && node dist/main.js --auto",
+    "auto:test": "npm run build && node dist/main.js --auto --max 1"
   },
   "keywords": [
     "ai",
