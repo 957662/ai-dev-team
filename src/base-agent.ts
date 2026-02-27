@@ -1,5 +1,7 @@
 /**
  * Claude Agent SDK - Agent 基类
+ * 
+ * 权限模式：bypassPermissions（完全自动化，无需人工确认）
  */
 import { query, Options } from '@anthropic-ai/claude-agent-sdk';
 
@@ -10,11 +12,21 @@ export interface AgentConfig {
   model?: string;
 }
 
+/**
+ * 权限模式说明：
+ * - 'default': 标准权限，危险操作需要确认
+ * - 'acceptEdits': 自动接受文件编辑
+ * - 'bypassPermissions': 跳过所有权限检查（完全自动化）
+ * - 'dontAsk': 不提示，未预批准则拒绝
+ */
+export type PermissionMode = 'default' | 'acceptEdits' | 'bypassPermissions' | 'dontAsk';
+
 export abstract class BaseAgent {
   protected role: string;
   protected systemPrompt: string;
   protected allowedTools: string[];
   protected model: string;
+  protected permissionMode: PermissionMode = 'bypassPermissions'; // 默认完全自动化
   protected conversationHistory: Array<{ role: string; content: string }> = [];
 
   constructor(config: AgentConfig) {
@@ -22,6 +34,13 @@ export abstract class BaseAgent {
     this.systemPrompt = config.systemPrompt;
     this.allowedTools = config.allowedTools;
     this.model = config.model || 'glm-5';
+  }
+
+  /**
+   * 设置权限模式
+   */
+  setPermissionMode(mode: PermissionMode): void {
+    this.permissionMode = mode;
   }
 
   async *execute(prompt: string): AsyncGenerator<any> {
@@ -35,10 +54,15 @@ export abstract class BaseAgent {
       fullPrompt = `之前的上下文：\n${context}\n\n当前任务：\n${prompt}`;
     }
 
+    // 配置选项，包含完整的权限设置
     const options: Options = {
       systemPrompt: this.systemPrompt,
       allowedTools: this.allowedTools as any,
       tools: this.allowedTools as any,
+      // 🔑 权限配置 - 完全自动化
+      permissionMode: this.permissionMode as any,
+      // ⚠️ 必须设置为 true 才能使用 bypassPermissions
+      allowDangerouslySkipPermissions: this.permissionMode === 'bypassPermissions',
     };
 
     for await (const message of query({
@@ -47,7 +71,7 @@ export abstract class BaseAgent {
     })) {
       // 记录对话历史
       if (message.type === 'assistant') {
-        for (const block of (message as any).message.content) {
+        for (const block of (message as any).message?.content || []) {
           if ('text' in block && block.text) {
             this.conversationHistory.push({
               role: 'assistant',
@@ -72,7 +96,7 @@ export abstract class BaseAgent {
       if (message.type === 'result') {
         results.push(message.result || '');
       } else if (message.type === 'assistant') {
-        for (const block of (message as any).message.content) {
+        for (const block of (message as any).message?.content || []) {
           if ('text' in block && block.text) {
             results.push(block.text);
           }
@@ -86,5 +110,15 @@ export abstract class BaseAgent {
     this.conversationHistory = [];
   }
 
+  /**
+   * 获取 Agent 能力列表
+   */
   abstract getCapabilities(): string[];
+  
+  /**
+   * 获取当前权限模式
+   */
+  getPermissionMode(): PermissionMode {
+    return this.permissionMode;
+  }
 }
