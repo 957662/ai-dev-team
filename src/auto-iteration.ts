@@ -74,6 +74,7 @@ export class AutoIterationEngine {
     // 初始化产品经理
     this.productManager = new ProductManagerAgent();
     this.productManager.setPermissionMode(this.config.permissionMode);
+    this.productManager.setThinkingMode('adaptive'); // 启用自适应深度推理
 
     // 初始化开发团队
     this.agents = {
@@ -88,9 +89,10 @@ export class AutoIterationEngine {
       assets: new AssetsAgent(),
     };
 
-    // 设置权限
+    // 设置权限和深度推理
     Object.values(this.agents).forEach(agent => {
       agent.setPermissionMode(this.config.permissionMode);
+      agent.setThinkingMode('adaptive'); // 启用自适应深度推理
     });
   }
 
