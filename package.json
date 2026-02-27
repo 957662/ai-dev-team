@@ -1,0 +1,28 @@
+{
+  "name": "ai-dev-team",
+  "version": "1.0.0",
+  "description": "AI 开发团队 - 基于 Claude Agent SDK 框架",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/main.js",
+    "dev": "ts-node src/main.ts",
+    "check": "node dist/main.js --check"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "claude",
+    "development"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.62"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.35",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
